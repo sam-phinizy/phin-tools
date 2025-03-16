@@ -1,5 +1,8 @@
 name: Build and Release
 
+permissions:
+  contents: write # This gives permission to create releases
+
 on:
   workflow_dispatch:
     inputs:
@@ -35,7 +38,8 @@ jobs:
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Build extension
-        run: npm run package
+        run: npm run package-extension
+        # Using the correct script from your package.json
 
       - name: Extract tag name (for tag-based release)
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
@@ -59,8 +63,10 @@ jobs:
             echo "version=${{ steps.package_version.outputs.version }}" >> $GITHUB_OUTPUT
             echo "notes=${{ github.event.inputs.release_notes }}" >> $GITHUB_OUTPUT
           fi
-      - name: Show files
-        run: ls -la
+
+      - name: List files after build
+        run: find . -name "*.vsix" | sort
+
       - name: Create GitHub Release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -73,5 +79,5 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            *.vsix
-            # Adjust this pattern based on where your extension package is generated
+            ./*.vsix
+            **/*.vsix
