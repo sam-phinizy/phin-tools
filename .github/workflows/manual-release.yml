@@ -27,13 +27,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install vsce
+        run: npm install -g @vscode/vsce
+
       - name: Get version from package.json
         id: package_version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Build extension
-        run: npm run vscode:package
-        # Adjust this command based on your build script in package.json
+        run: npm run package-extension
+        # Using the correct script from your package.json
 
       - name: Extract tag name (for tag-based release)
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
