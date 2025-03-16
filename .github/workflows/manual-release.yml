@@ -1,0 +1,74 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_notes:
+        description: "Release notes"
+        required: true
+  push:
+    tags:
+      - "v*.*.*"
+      - "version:*.*.*"
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get version from package.json
+        id: package_version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Build extension
+        run: npm run vscode:package
+        # Adjust this command based on your build script in package.json
+
+      - name: Extract tag name (for tag-based release)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        id: extract_tag
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          if [[ $TAG == version:* ]]; then
+            VERSION=${TAG#version:}
+          else
+            VERSION=${TAG#v}
+          fi
+          echo "tag_version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set release version
+        id: release_version
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "version=${{ steps.extract_tag.outputs.tag_version }}" >> $GITHUB_OUTPUT
+            echo "notes=Release ${{ steps.extract_tag.outputs.tag_version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ steps.package_version.outputs.version }}" >> $GITHUB_OUTPUT
+            echo "notes=${{ github.event.inputs.release_notes }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.release_version.outputs.version }}
+          name: Release v${{ steps.release_version.outputs.version }}
+          body: ${{ steps.release_version.outputs.notes }}
+          draft: false
+          prerelease: false
+          files: |
+            *.vsix
+            # Adjust this pattern based on where your extension package is generated

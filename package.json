@@ -1,7 +1,12 @@
 {
-  "name": "tools-phin-tech",
+  "name": "phin-tools",
   "displayName": "phin-tools",
   "description": "A simple set of macros and tools i like to use",
+  "publisher": "phin-tech",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phin-tech/phin-tools"
+  },
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.95.0"
