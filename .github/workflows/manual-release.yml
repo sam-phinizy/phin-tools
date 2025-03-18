@@ -60,10 +60,53 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "push" ]]; then
             echo "version=${{ steps.extract_tag.outputs.tag_version }}" >> $GITHUB_OUTPUT
-            echo "notes=Release ${{ steps.extract_tag.outputs.tag_version }}" >> $GITHUB_OUTPUT
+            VERSION="${{ steps.extract_tag.outputs.tag_version }}"
           else
             echo "version=${{ steps.package_version.outputs.version }}" >> $GITHUB_OUTPUT
-            cat  >> $GITHUB_OUTPUT
+            VERSION="${{ steps.package_version.outputs.version }}"
+          fi
+          
+          # Extract release notes from CHANGELOG.md for the current version
+          if [[ -f "CHANGELOG.md" ]]; then
+            # Create a temporary file to store the notes
+            NOTES_FILE=$(mktemp)
+            
+            # Find the section for current version and extract all content until the next version or end of file
+            VERSION_REGEX="## \[?${VERSION}\]?"
+            NEXT_VERSION_REGEX="## \[?"
+            
+            # Use awk to extract the content between the current version and the next version header
+            awk -v version_regex="$VERSION_REGEX" -v next_regex="$NEXT_VERSION_REGEX" '
+              BEGIN { found=0; }
+              $0 ~ version_regex { found=1; next; }
+              found==1 && $0 ~ next_regex { found=0; next; }
+              found==1 { print $0; }
+            ' CHANGELOG.md > "$NOTES_FILE"
+            
+            # If we found release notes, use them
+            if [[ -s "$NOTES_FILE" ]]; then
+              echo "notes<<EOF" >> $GITHUB_OUTPUT
+              cat "$NOTES_FILE" >> $GITHUB_OUTPUT
+              echo "EOF" >> $GITHUB_OUTPUT
+            else
+              # Fallback if no notes found in CHANGELOG
+              if [[ "${{ github.event_name }}" == "push" ]]; then
+                echo "notes=Release ${{ steps.extract_tag.outputs.tag_version }}" >> $GITHUB_OUTPUT
+              else
+                echo "notes=${{ github.event.inputs.release_notes }}" >> $GITHUB_OUTPUT
+              fi
+            fi
+            
+            # Clean up temp file
+            rm "$NOTES_FILE"
+          else
+            # Fallback if no CHANGELOG.md exists
+            if [[ "${{ github.event_name }}" == "push" ]]; then
+              echo "notes=Release ${{ steps.extract_tag.outputs.tag_version }}" >> $GITHUB_OUTPUT
+            else
+              echo "notes=${{ github.event.inputs.release_notes }}" >> $GITHUB_OUTPUT
+            fi
+          fi
 
       - name: List files after setting release version
         run: find . -name "*.vsix" | sort
