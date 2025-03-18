@@ -4,6 +4,7 @@ All notable changes to the "phin-tools" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [0.0.2]
 
-- Initial release
+- Added URI handler to trigger the clipboardToFilePath command from external applications
+- Initial release with clipboardToFilePath command
