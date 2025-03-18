@@ -1,7 +1,7 @@
 {
   "name": "phin-tools",
-  "displayName": "phin-tools",
-  "description": "A simple set of macros and tools i like to use",
+  "displayName": "Phin Tools",
+  "description": "Productivity tools for VS Code, including clipboard to file path conversion and text-based file creation",
   "publisher": "phin-tech",
   "repository": {
     "type": "git",
@@ -11,8 +11,17 @@
   "engines": {
     "vscode": "^1.95.0"
   },
+  "icon": "images/icon.png",
   "categories": [
-    "Other"
+    "Other",
+    "Productivity"
+  ],
+  "keywords": [
+    "clipboard",
+    "file creation",
+    "productivity",
+    "automation",
+    "workflow"
   ],
   "activationEvents": [
     "onUri"
@@ -32,6 +41,16 @@
         "mac": "cmd+alt+v"
       }
     ]
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "This extension requires workspace access to create files from clipboard content."
+    },
+    "virtualWorkspaces": {
+      "supported": false,
+      "description": "This extension requires access to the local filesystem."
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
