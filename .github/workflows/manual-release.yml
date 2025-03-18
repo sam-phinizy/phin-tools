@@ -8,7 +8,7 @@ on:
     inputs:
       release_notes:
         description: "Release notes"
-        required: false
+        required: 
   push:
     tags:
       - "v*.*.*"
@@ -63,7 +63,7 @@ jobs:
             echo "notes=Release ${{ steps.extract_tag.outputs.tag_version }}" >> $GITHUB_OUTPUT
           else
             echo "version=${{ steps.package_version.outputs.version }}" >> $GITHUB_OUTPUT
-            echo "notes=${{ github.event.inputs.release_notes }}" >> $GITHUB_OUTPUT
+            cat  >> $GITHUB_OUTPUT
 
       - name: List files after setting release version
         run: find . -name "*.vsix" | sort
