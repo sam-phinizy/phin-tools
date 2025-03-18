@@ -111,8 +111,10 @@ suite('Clipboard to File Path Extension Tests', () => {
     // Mock QuickPick
     const showStub = sandbox.stub().returns();
     const disposeStub = sandbox.stub().returns();
-    let onDidAcceptCallback: () => void;
-    let onDidHideCallback: () => void;
+    
+    // Create callbacks variables before using them
+    let onDidAcceptCallback: () => void = () => {};
+    let onDidHideCallback: () => void = () => {};
     
     const quickPickStub = {
       placeholder: '',
@@ -143,12 +145,41 @@ suite('Clipboard to File Path Extension Tests', () => {
     const mkdirSyncStub = sandbox.stub(fs, 'mkdirSync');
     const writeFileSyncStub = sandbox.stub(fs, 'writeFileSync');
     
-    // Mock getSuggestedDirectories
-    sandbox.stub(fs.promises, 'readdir').resolves([
-      { name: 'src', isDirectory: () => true },
-      { name: 'test', isDirectory: () => true },
-      { name: 'node_modules', isDirectory: () => true }
-    ] as any[]);
+    // Mock getSuggestedDirectories by providing options to readdir
+    const direntMocks = [
+      { 
+        name: 'src', 
+        isDirectory: function(path?: string): boolean { return true; },
+        isFile: function(): boolean { return false; },
+        isBlockDevice: function(): boolean { return false; },
+        isCharacterDevice: function(): boolean { return false; },
+        isSymbolicLink: function(): boolean { return false; },
+        isFIFO: function(): boolean { return false; },
+        isSocket: function(): boolean { return false; }
+      } as unknown as fs.Dirent,
+      { 
+        name: 'test', 
+        isDirectory: function(path?: string): boolean { return true; },
+        isFile: function(): boolean { return false; },
+        isBlockDevice: function(): boolean { return false; },
+        isCharacterDevice: function(): boolean { return false; },
+        isSymbolicLink: function(): boolean { return false; },
+        isFIFO: function(): boolean { return false; },
+        isSocket: function(): boolean { return false; }
+      } as unknown as fs.Dirent,
+      { 
+        name: 'node_modules', 
+        isDirectory: function(path?: string): boolean { return true; },
+        isFile: function(): boolean { return false; },
+        isBlockDevice: function(): boolean { return false; },
+        isCharacterDevice: function(): boolean { return false; },
+        isSymbolicLink: function(): boolean { return false; },
+        isFIFO: function(): boolean { return false; },
+        isSocket: function(): boolean { return false; }
+      } as unknown as fs.Dirent
+    ];
+    
+    sandbox.stub(fs.promises, 'readdir').resolves(direntMocks as fs.Dirent[]);
     
     // Mock document opening
     const expectedPath = path.join(tempDir, 'src/custom.js');
@@ -159,9 +190,7 @@ suite('Clipboard to File Path Extension Tests', () => {
     const commandPromise = vscode.commands.executeCommand('extension.clipboardToFilePath');
     
     // Simulate user selecting an item
-    if (onDidAcceptCallback) {
-      onDidAcceptCallback();
-    }
+    onDidAcceptCallback();
     
     await commandPromise;
     
