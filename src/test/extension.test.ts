@@ -1,10 +1,11 @@
 // filepath: src/test/extension.test.ts
 import * as assert from 'assert';
-import * as vscode from 'vscode';
 import * as fs from 'fs';
-import * as path from 'path';
 import * as os from 'os';
+import * as path from 'path';
+
 import * as sinon from 'sinon';
+import * as vscode from 'vscode';
 
 suite('Clipboard to File Path Extension Tests', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'clipboard-test-'));
@@ -109,8 +110,8 @@ suite('Clipboard to File Path Extension Tests', () => {
     ]);
     
     // Mock QuickPick
-    const showStub = sandbox.stub().returns();
-    const disposeStub = sandbox.stub().returns();
+    const showStub = sandbox.stub().returns(undefined);
+    const disposeStub = sandbox.stub().returns(undefined);
     
     // Create callbacks variables before using them
     let onDidAcceptCallback: () => void = () => {};

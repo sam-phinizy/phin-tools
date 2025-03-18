@@ -1,15 +1,16 @@
 // filepath: src/extension.ts
-import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 
-export function activate(context: vscode.ExtensionContext) {
+import * as vscode from "vscode";
+
+export function activate(context: vscode.ExtensionContext): void {
   console.log("Clipboard to File Path extension is now active");
 
   // Key for storing the last used directory in global state
   const LAST_DIR_KEY = "clipboardToFilePath.lastUsedDirectory";
 
-  let disposable = vscode.commands.registerCommand(
+  const disposable = vscode.commands.registerCommand(
     "extension.clipboardToFilePath",
     async () => {
       try {
@@ -40,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
           const workspaceRoot = workspaceFolders[0].uri.fsPath;
 
           // Get the last used directory from context
-          let lastUsedDirectory = context.globalState.get<string>(LAST_DIR_KEY) || "";
+          const lastUsedDirectory = context.globalState.get<string>(LAST_DIR_KEY) || "";
 
           // Create quick pick with path suggestions
           const quickPick = vscode.window.createQuickPick();
@@ -212,7 +213,7 @@ async function getSuggestedDirectories(workspaceRoot: string, currentInput: stri
             await scanDirectory(path.join(dir, entry.name), subRelativeDir, depth + 1);
           }
         }
-      } catch (err) {
+      } catch (error) {
         // Silently handle directory access errors
       }
     };
@@ -231,7 +232,7 @@ async function getSuggestedDirectories(workspaceRoot: string, currentInput: stri
           startDir = inputAbsolutePath;
           startRelativeDir = currentInput;
         }
-      } catch (err) {
+      } catch (error) {
         // Silently handle directory access errors
       }
     }
@@ -245,4 +246,4 @@ async function getSuggestedDirectories(workspaceRoot: string, currentInput: stri
   }
 }
 
-export function deactivate() {}
+export function deactivate(): void {}
