@@ -8,7 +8,7 @@ on:
     inputs:
       release_notes:
         description: "Release notes"
-        required: true
+        required: false
   push:
     tags:
       - "v*.*.*"
@@ -39,7 +39,9 @@ jobs:
 
       - name: Build extension
         run: npm run package-extension
-        # Using the correct script from your package.json
+
+      - name: List files after build
+        run: find . -name "*.vsix" | sort
 
       - name: Extract tag name (for tag-based release)
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
@@ -62,9 +64,8 @@ jobs:
           else
             echo "version=${{ steps.package_version.outputs.version }}" >> $GITHUB_OUTPUT
             echo "notes=${{ github.event.inputs.release_notes }}" >> $GITHUB_OUTPUT
-          fi
 
-      - name: List files after build
+      - name: List files after setting release version
         run: find . -name "*.vsix" | sort
 
       - name: Create GitHub Release
